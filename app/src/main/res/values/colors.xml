@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="wifigo_primary">#FF1769FF</color>
+    <color name="wifigo_secondary">#FF0B3D91</color>
+    <color name="wifigo_background">#FFF5F8FF</color>
+    <color name="wifigo_launcher_bg">#FF0E6FFE</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private user profile and synced preferences for a signed-in WiFiGo user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the user." },
+        "displayName": { "type": "string", "description": "Display name shown in profile." },
+        "email": { "type": "string", "description": "User email address (private PII)." },
+        "preferredLanguage": { "type": "string", "enum": ["en", "bn"], "description": "Preferred app language." },
+        "darkModeEnabled": { "type": "boolean", "description": "Dark theme preference." },
+        "notificationsEnabled": { "type": "boolean", "description": "Notification alerts preference." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": ["userId", "displayName", "preferredLanguage", "darkModeEnabled", "notificationsEnabled", "createdAt", "updatedAt"]
+    },
+    "UserFavorite": {
+      "title": "UserFavorite",
+      "description": "A user's favorited WiFi network or public hotspot.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID." },
+        "name": { "type": "string", "description": "SSID or hotspot name." },
+        "bssid": { "type": "string", "description": "Optional BSSID MAC address." },
+        "securityType": { "type": "string", "description": "Security capability label." },
+        "frequencyMhz": { "type": "integer", "description": "WiFi frequency in MHz." },
+        "itemType": { "type": "string", "enum": ["wifi_network", "public_hotspot"], "description": "Favorite category." },
+        "notes": { "type": "string", "description": "Optional user note." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": ["userId", "name", "securityType", "frequencyMhz", "itemType", "createdAt", "updatedAt"]
+    },
+    "PublicHotspot": {
+      "title": "PublicHotspot",
+      "description": "Community-submitted public WiFi hotspot entry.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "description": "Author Firebase Auth UID." },
+        "isPublic": { "type": "boolean", "description": "Whether the hotspot is publicly listed." },
+        "name": { "type": "string", "description": "Venue or hotspot name." },
+        "venueType": { "type": "string", "enum": ["cafe", "library", "airport", "park", "coworking", "transit", "other"] },
+        "address": { "type": "string", "description": "Street address or landmark." },
+        "city": { "type": "string", "description": "City or area name." },
+        "latitude": { "type": "number", "description": "Latitude coordinate." },
+        "longitude": { "type": "number", "description": "Longitude coordinate." },
+        "ssid": { "type": "string", "description": "Broadcast WiFi SSID." },
+        "securityType": { "type": "string", "enum": ["Open", "Captive Portal", "WPA2", "WPA3"] },
+        "isFree": { "type": "boolean", "description": "Whether access is free." },
+        "notes": { "type": "string", "description": "Optional access notes." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": ["ownerId", "isPublic", "name", "venueType", "address", "city", "latitude", "longitude", "ssid", "securityType", "isFree", "createdAt", "updatedAt"]
+    },
+    "HotspotReview": {
+      "title": "HotspotReview",
+      "description": "User review for a public hotspot.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Reviewer Firebase Auth UID." },
+        "authorName": { "type": "string", "description": "Reviewer display name." },
+        "hotspotId": { "type": "string", "description": "Target hotspot document ID." },
+        "isPublic": { "type": "boolean", "description": "Visibility flag." },
+        "rating": { "type": "integer", "description": "Rating from 1 to 5." },
+        "comment": { "type": "string", "description": "Review text." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": ["userId", "authorName", "hotspotId", "isPublic", "rating", "comment", "createdAt"]
+    },
+    "HotspotReport": {
+      "title": "HotspotReport",
+      "description": "User-submitted status/accuracy report for a hotspot.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Reporter Firebase Auth UID." },
+        "hotspotId": { "type": "string", "description": "Target hotspot document ID." },
+        "reason": { "type": "string", "enum": ["offline", "wrong_location", "wrong_ssid", "requires_payment", "other"] },
+        "details": { "type": "string", "description": "Report details." },
+        "status": { "type": "string", "enum": ["open", "reviewed", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": ["userId", "hotspotId", "reason", "details", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile and preferences."
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": { "$ref": "#/entities/UserFavorite" },
+      "description": "User's saved favorite WiFi networks and hotspots."
+    },
+    "/hotspots/{hotspotId}": {
+      "schema": { "$ref": "#/entities/PublicHotspot" },
+      "description": "Community-submitted public WiFi hotspots."
+    },
+    "/hotspot_reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/HotspotReview" },
+      "description": "Community reviews for public WiFi hotspots."
+    },
+    "/hotspot_reports/{reportId}": {
+      "schema": { "$ref": "#/entities/HotspotReport" },
+      "description": "User-submitted hotspot status and accuracy reports."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "WiFiGo",
+  "description": "WiFiGo by Success Life IT — Connect Smarter. Browse Anywhere. Real WiFi scanner, QR WiFi scanner, speed test, offline storage, offline browser, download manager, and public WiFi finder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
