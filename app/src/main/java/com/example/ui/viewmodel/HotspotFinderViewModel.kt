@@ -34,8 +34,8 @@ sealed interface HotspotUiState {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HotspotFinderViewModel(
-    private val hotspotRepository: FirestoreHotspotRepository,
-    private val userRepository: FirestoreUserRepository,
+    private val hotspotRepository: FirestoreHotspotRepository?,
+    private val userRepository: FirestoreUserRepository?,
     private val favoriteNetworkDao: FavoriteNetworkDao,
     private val currentUserId: String?,
     private val currentUserName: String?
@@ -49,7 +49,7 @@ class HotspotFinderViewModel(
 
     private val _selectedHotspotId = MutableStateFlow<String?>(null)
 
-    private val rawHotspotsFlow = if (currentUserId == null) {
+    private val rawHotspotsFlow = if (currentUserId == null || hotspotRepository == null) {
         flowOf<HotspotUiState>(HotspotUiState.GuestMode)
     } else {
         hotspotRepository.observePublicHotspots()
@@ -94,7 +94,7 @@ class HotspotFinderViewModel(
 
     val selectedReviews: StateFlow<List<HotspotReview>> = _selectedHotspotId
         .flatMapLatest { hotspotId ->
-            if (currentUserId == null || hotspotId.isNullOrBlank()) {
+            if (currentUserId == null || hotspotRepository == null || hotspotId.isNullOrBlank()) {
                 flowOf(emptyList())
             } else {
                 hotspotRepository.observeReviewsForHotspot(hotspotId)
@@ -103,7 +103,7 @@ class HotspotFinderViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
-    val userReports: StateFlow<List<HotspotReport>> = if (currentUserId == null) {
+    val userReports: StateFlow<List<HotspotReport>> = if (currentUserId == null || hotspotRepository == null) {
         flowOf(emptyList())
     } else {
         hotspotRepository.observeUserReports(currentUserId)
@@ -134,7 +134,7 @@ class HotspotFinderViewModel(
         isFree: Boolean,
         notes: String
     ) {
-        if (currentUserId == null) {
+        if (currentUserId == null || hotspotRepository == null) {
             _actionMessage.value = "Sign in with Google to share a public hotspot"
             return
         }
@@ -159,7 +159,7 @@ class HotspotFinderViewModel(
     }
 
     fun addReview(hotspotId: String, rating: Int, comment: String) {
-        if (currentUserId == null) {
+        if (currentUserId == null || hotspotRepository == null) {
             _actionMessage.value = "Sign in with Google to post a review"
             return
         }
@@ -178,7 +178,7 @@ class HotspotFinderViewModel(
     }
 
     fun submitReport(hotspotId: String, reason: String, details: String) {
-        if (currentUserId == null) {
+        if (currentUserId == null || hotspotRepository == null) {
             _actionMessage.value = "Sign in with Google to report a hotspot issue"
             return
         }
@@ -200,7 +200,7 @@ class HotspotFinderViewModel(
                     notes = "${hotspot.name} • ${hotspot.city}"
                 )
             )
-            if (currentUserId != null) {
+            if (currentUserId != null && userRepository != null) {
                 userRepository.saveFavorite(
                     favoriteId = "hs_${hotspot.id}",
                     name = hotspot.name,

@@ -271,11 +271,21 @@ fun WiFiGoRootApp(credentialManager: CredentialManager) {
         factory = viewModelFactory {
             initializer {
                 val app = checkNotNull(this[APPLICATION_KEY]) as WiFiGoApp
-                val dbId = app.getString(R.string.firestore_database_id)
-                val db = FirebaseFirestore.getInstance(dbId)
+                val db = try {
+                    val dbId = app.getString(R.string.firestore_database_id)
+                    FirebaseFirestore.getInstance(dbId)
+                } catch (_: Exception) {
+                    null
+                }
+                val hotspotRepo = db?.let {
+                    try { FirestoreHotspotRepository(it) } catch (_: Exception) { null }
+                }
+                val userRepo = db?.let {
+                    try { FirestoreUserRepository(it) } catch (_: Exception) { null }
+                }
                 HotspotFinderViewModel(
-                    hotspotRepository = FirestoreHotspotRepository(db),
-                    userRepository = FirestoreUserRepository(db),
+                    hotspotRepository = hotspotRepo,
+                    userRepository = userRepo,
                     favoriteNetworkDao = app.database.favoriteNetworkDao(),
                     currentUserId = authUser?.uid,
                     currentUserName = authUser?.displayName
